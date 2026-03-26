@@ -1,0 +1,12 @@
+services:
+  chatterbox:
+    build: .
+    container_name: echo-chatterbox
+    ports:
+      - "5050:5050"
+    volumes:
+      - ./voices:/voices
+    environment:
+      - DEVICE=cpu
+      - VOICE_REF=/voices/active_ref.wav
+    restart: unless-stopped
