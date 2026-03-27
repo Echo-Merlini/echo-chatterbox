@@ -5,6 +5,7 @@ POST /speak  { "text": "...", "exaggeration": 0.5, "cfg_weight": 0.5 }
 Returns: audio/wav
 """
 import io, os, logging, threading
+from typing import Optional
 import soundfile as sf
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
@@ -30,12 +31,14 @@ class SpeakRequest(BaseModel):
     exaggeration: float = 0.5
     cfg_weight: float = 0.5
     temperature: float = 0.8
+    voice_ref: Optional[str] = None
 
 @app.post("/speak")
 def speak(req: SpeakRequest):
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="text is required")
-    ref = VOICE_REF if os.path.exists(VOICE_REF) else None
+    ref_path = req.voice_ref if req.voice_ref else VOICE_REF
+    ref = ref_path if os.path.exists(ref_path) else None
     log.info(f"Generating: {req.text[:60]}...")
     with _lock:
         wav = model.generate(req.text, audio_prompt_path=ref,
